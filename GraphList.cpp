@@ -5,8 +5,22 @@
 #include <queue>
 #include <iterator>
 #include <limits>
+#include <iomanip>
 
 using namespace std;
+constexpr int INF = numeric_limits<int>::max();
+using pii = pair<int, int>;
+using tiii = tuple<int, int, int>;
+
+
+//Comparator functions and classes
+struct sortDistance {
+	bool operator() (const pii& lhs, const pii& rhs) {
+		return lhs.second > rhs.second;
+	}
+};
+
+
 
 //Adjacency list definition
 class GraphList {
@@ -14,7 +28,7 @@ private:
 	int m_V;  //vertices
 	int m_E = 0;  //edges
 	bool DAG = false; // to check if the graph is a Directed Graph
-  //0 index means null pointer in Graph structure pointing to nothing. N -> null
+	//0 index means null pointer in Graph structure pointing to nothing. N -> null
 	map<int, vector<pair<int, int>> > Adj; //for storing undirected and digraph
 	vector<int> indegree; // for storing indegree data
 
@@ -251,8 +265,8 @@ public:
 			cout << "Please check the end vertex\n";
 		}
 		else {
-			vector<int> distance(m_V + 1, numeric_limits<int>::max()); //starts with index 1
-			vector<int> path(m_V + 1, -1); //starts with index 1
+			vector<int> distance(m_V + 1, INF); //starts with index 1
+			vector<int> path(m_V + 1, INF); //starts with index 1
 			queue<int> Q;
 			Q.push(start);
 			distance[start] = 0;
@@ -261,7 +275,7 @@ public:
 			while (Q.empty() != true) {
 				int idx = Q.front(); Q.pop();
 				for (const auto& node : Adj[idx]) {
-					if (distance[node.first] == -1) {
+					if (distance[node.first] == INF) {
 						distance[node.first] = distance[idx] + 1;
 						path[node.first] = idx;
 						Q.push(node.first);
@@ -277,22 +291,22 @@ public:
 					break;
 			}
 
-			cout << "Distance :";
-			for (int i = 0; i <= m_V; i++) {
-				cout << distance[i] << " ";
-			}
+			//cout << "Distance :";
+			//for (int i = 0; i <= m_V; i++) {
+			//	cout << distance[i] << " ";
+			//}
 
-			// cout << "\nPath :";
-			// for(int i = 0; i <= m_V; i++){
-			//   cout << path[i] << " ";
-			// }
+			//cout << "\nPath :";
+			 //for(int i = 0; i <= m_V; i++){
+			 //  cout << path[i] << " ";
+			 //}
 
 			cout << "\nShortest Path :";
 			vector<int> track;
 			int i = end;
 
 			//backtrack from the end to start of the path array
-			while (path[i] != -1) {
+			while (path[i] != INF) {
 				track.push_back(i);
 				i = path[i];
 			}
@@ -305,6 +319,72 @@ public:
 		}
 	}
 
+	void Dijkstra(int start, int end) { //Weighted shortest path
+		if (start <= 0 && start > m_V) {
+			cout << "Please check the start vertex\n";
+		}
+		else if (end <= 0 && end > m_V) {
+			cout << "Please check the end vertex\n";
+		}
+		else {
+			vector<int> distance(m_V + 1, INF); //starts with index 1
+			vector<int> path(m_V + 1, INF); //starts with index 1
+
+			distance[start] = 0;
+			bool flag = false;
+
+			//minimim priority queue associated with distance in the distance table
+			priority_queue<pii, vector<pii>, sortDistance > pq;
+			//Entry		[vertex, distance value]
+			pq.push({ start, distance[start] });
+			
+
+			while (pq.empty() != true) {
+				int node = pq.top().first; pq.pop();
+
+				for (const auto& w : Adj[node]) { // get all the neighbour vertices
+					int new_dist = distance[node] + w.second;
+
+					if (distance[w.first] == INF) {
+						distance[w.first] = new_dist;
+						pq.push({ w.first, new_dist });
+						path[w.first] = node;
+					}
+
+					if (distance[w.first] > new_dist) {
+						distance[w.first] = new_dist;
+						pq.push({ w.first, new_dist });
+						path[w.first] = node;
+					}
+				}
+			}
+
+			//cout << "Distance :";
+			//for (int i = 0; i <= m_V; i++) {
+			//	cout << distance[i] << " ";
+			//}
+
+			cout << "\nMinimum Distance :" << distance[end];
+			
+			cout << "\nShortest Path :";
+			vector<int> track;
+			int i = end;
+
+			//backtrack from the end to start of the path array
+			while (path[i] != INF) {
+				track.push_back(i);
+				i = path[i];
+			}
+			track.push_back(i); //trailing node
+
+			for (int i = track.size() - 1; i >= 0; i--) {
+				cout << track[i] << " ";
+			}
+			cout << "\n";
+
+		}//end else
+	}
+
 	void GetStat() {
 		cout << "Vertices:" << m_V << "\n";
 		cout << "Edges:" << m_E << "\n";
@@ -313,92 +393,82 @@ public:
 };
 
 int main() {
-	int vertices = 7;
-	GraphList gl(vertices);
-	int weight = 0; //Unweighted directed graph
 
-	vector<pair<int, int>> V = {
-	  {1, 2},
-	  {1, 4},
-	  {2, 4},
-	  {2, 5},
-	  {3, 1},
-	  {3, 6},
-	  {4, 3},
-	  {4, 5},
-	  {4, 6},
-	  {4, 7},
-	  {5, 7},
-	  {7, 6}
+	vector<pii> V0 = {
+		{1, 2},
+		{1, 4},
+		{2, 4},
+		{2, 5},
+		{3, 1},
+		{3, 6},
+		{4, 3},
+		{4, 5},
+		{4, 6},
+		{4, 7},
+		{5, 7},
+		{7, 6}
 	};
 
 	//Using directed acyclic graph DAG
-	vector<pair<int, int>> V1 = {
-	  {1, 2},
-	  {1, 4},
-	  {1, 3},
-	  {2, 5},
-	  {2, 4},
-	  {3, 6},
-	  {4, 3},
-	  {4, 6},
-	  {4, 7},
-	  {5, 4},
-	  {5, 7},
-	  {7, 6}
+	vector<pii> V1 = {
+		{1, 2},
+		{1, 4},
+		{1, 3},
+		{2, 5},
+		{2, 4},
+		{3, 6},
+		{4, 3},
+		{4, 6},
+		{4, 7},
+		{5, 4},
+		{5, 7},
+		{7, 6}
 	};
+
+	//GraphList connComponent(vertices);
+	vector<pii> V2 = {
+		{1, 2},
+		{1, 3},
+		{2, 3},
+		{4, 0},
+		{5, 6},
+		{5, 9},
+		{6, 7},
+		{6, 8},
+		{6, 9},
+		{7, 8},
+		{9, 8},
+		{10, 11},
+		{11, 12},
+		{11, 13},
+		{14, 15},
+		{15, 16},
+		{15, 17},
+		{16, 17},
+		{17, 18}
+	};
+
+	//directed weightd graph
+	vector<tiii> V3 = {
+		{1, 2, 4},
+		{1, 3, 1},
+		{2, 5, 4},
+		{3, 2, 2},
+		{3, 4, 4}
+	};
+
+	GraphList gl(5);
+
+	for (const auto& i : V3) {
+		auto [from, to, weight] = i;
+		gl.AddDiEdge(from, to, weight);
+	}
+
+	gl.PrintDiGraph();
+	gl.Dijkstra(1, 5);
+
+
 	
-	//vector<int> weightList = { 2, 1, 3, 10, 4, 5, 2, 2, 8, 4, 6, 1 };
 
-	/*for (const auto& i : V1)
-		gl.AddDiEdge(i.first, i.second, weight);
-
-	gl.PrintDiGraph();
-	gl.TopSort();*/
-
-
-	for (const auto& i : V)
-		gl.AddDiEdge(i.first, i.second, weight);
-
-	gl.PrintDiGraph();
-	gl.UnweightedShortestPath(3, 7);
-
-
-	//int k = 0;
-	//for (const auto& i : V) {
-	//	gl.AddDiEdge(i.first, i.second, weightList[k]);
-	//	++k;
-	//}
-
-	/*GraphList connComponent(vertices);
-	vector<pair<int, int>> V = {
-	  {1, 2},
-	  {1, 3},
-	  {2, 3},
-	  {4, 0},
-	  {5, 6},
-	  {5, 9},
-	  {6, 7},
-	  {6, 8},
-	  {6, 9},
-	  {7, 8},
-	  {9, 8},
-	  {10, 11},
-	  {11, 12},
-	  {11, 13},
-	  {14, 15},
-	  {15, 16},
-	  {15, 17},
-	  {16, 17},
-	  {17, 18}
-	};
-
-	for (const auto& i : V)
-		connComponent.AddEdge(i.first, i.second);
-
-	connComponent.PrintUnDiGraph();
-	cout << connComponent.FindComponents() << "\n";*/
-
-	cin.get();
 	return 0;
 }
