@@ -28,6 +28,7 @@ private:
 	int m_V;  //vertices
 	int m_E = 0;  //edges
 	bool DAG = false; // to check if the graph is a Directed Graph
+
 	//0 index means null pointer in Graph structure pointing to nothing. N -> null
 	map<int, vector<pair<int, int>> > Adj; //for storing undirected and digraph
 	vector<int> indegree; // for storing indegree data
