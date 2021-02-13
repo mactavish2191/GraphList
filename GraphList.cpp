@@ -266,6 +266,7 @@ public:
 			cout << "Please check the end vertex\n";
 		}
 		else {
+			cout << "Running Unweighted Shortest Path Algorithm......\n";
 			vector<int> distance(m_V + 1, INF); //starts with index 1
 			vector<int> path(m_V + 1, INF); //starts with index 1
 			queue<int> Q;
@@ -275,9 +276,9 @@ public:
 
 			while (Q.empty() != true) {
 				int idx = Q.front(); Q.pop();
-				for (const auto& node : Adj[idx]) {
-					if (distance[node.first] == INF) {
-						distance[node.first] = distance[idx] + 1;
+				for (const auto& node : Adj[idx]) { //check the surrounding nodes
+					if (distance[node.first] == INF) { //if the node is not visited then visit and update the distance
+						distance[node.first] = distance[idx] + 1; 
 						path[node.first] = idx;
 						Q.push(node.first);
 
@@ -328,6 +329,7 @@ public:
 			cout << "Please check the end vertex\n";
 		}
 		else {
+			cout << "Running Dijsktra Shortest Path Algorithm......\n";
 			vector<int> distance(m_V + 1, INF); //starts with index 1
 			vector<int> path(m_V + 1, INF); //starts with index 1
 
@@ -386,6 +388,64 @@ public:
 		}//end else
 	}
 
+	void BellmanFordShortestPath(int start, int end) { //Weighted shortest path with negative edges //avg:On2 worst:On3
+		if (start <= 0 && start > m_V) {
+			cout << "Please check the start vertex\n";
+		}
+		else if (end <= 0 && end > m_V) {
+			cout << "Please check the end vertex\n";
+		}
+		else { //INF 2147483647 INTMAX 
+			cout << "Running Bellman Ford Shortest Path Algorithm......\n";
+			vector<int> distance(m_V + 1, INF); //starts with index 1
+			vector<int> path(m_V + 1, INF); //starts with index 1
+
+			distance[start] = 0;
+
+      //Relaxation code to get rid of negative edge values
+      for (int cnt = 0; cnt < m_V - 1; cnt++) { // |V| - 1
+				for (int node = 1; node <= m_V; node++) { // scan all the vertices 
+          for (const auto& v : Adj[node]) {
+						if (distance[node] + v.second < distance[v.first]) {
+							distance[v.first] = distance[node] + v.second;
+							path[v.first] = node;
+						}
+          }
+        }
+      }
+
+
+			//Check for the negative weight cycle
+			for (int node = 1; node <= m_V; node++) { // scan all the vertices 
+				for (const auto& v : Adj[node]) {
+					if (distance[node] + v.second < distance[v.first]) {
+						cout << "Graph has negative cycle\n";
+						return; // exit from here
+					}
+				}
+			}
+			
+			cout << "\nMinimum Distance :" << distance[end];
+
+			cout << "\nShortest Path :";
+			vector<int> track;
+			int i = end;
+
+			//backtrack from the end to start of the path array
+			while (path[i] != INF) {
+				track.push_back(i);
+				i = path[i];
+			}
+			track.push_back(i); //trailing node
+
+			for (int i = track.size() - 1; i >= 0; i--) {
+				cout << track[i] << " ";
+			}
+			cout << "\n";
+
+		}
+
+	}
 	void GetStat() {
 		cout << "Vertices:" << m_V << "\n";
 		cout << "Edges:" << m_E << "\n";
@@ -458,15 +518,41 @@ int main() {
 		{3, 4, 4}
 	};
 
-	GraphList gl(5);
+	//directed weightd graph
+	vector<tiii> V4 = {
+		{1, 2, 10},
+		{1, 3, 15},
+		{2, 4, 12},
+		{2, 6, 15},
+		{3, 5, 10},
+		{4, 5, 2},
+		{4, 6, 1}
+	};
 
-	for (const auto& i : V3) {
-		auto [from, to, weight] = i;
+	//directed weighted graph with negative edges
+	vector<tiii> V5 = {
+		{1, 2, 6},
+		{1, 3, 5},
+		{1, 4, 5},
+		{2, 5, -1},
+		{3, 2, -2},
+		{3, 5, 1},
+		{4, 3, -2},
+		{4, 6, -1},
+		{5, 7, 3},
+		{6, 7, 3},
+		{7, 0, 0}
+	};
+
+	GraphList gl(7);
+
+	for (const auto& i : V5) {
+		auto &[from, to, weight] = i;
 		gl.AddDiEdge(from, to, weight);
 	}
 
 	gl.PrintDiGraph();
-	gl.Dijkstra(1, 5);
+	gl.BellmanFordShortestPath(1, 7);
 
 
 	
